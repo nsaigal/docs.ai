@@ -88,6 +88,9 @@ RESPONSE FORMAT:
 - Recommend the MOST SPECIFIC documentation page that answers their query
 - If the answer is on a linked page, explicitly reference that link
 - Prioritize pages from the current site structure over search results
+- Answer the user's query using the most relevant information from the pages you search
+- If you user asks you to generate a code, generate a code block in markdown if you are sure it will compile.
+- If writing code, be code-efficient and only generate core parts, but do not sacrifice readability or latency.
 
 User Query: {request.query}
 

@@ -202,11 +202,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (foundUrls) {
           console.log('Found URLs in response:', foundUrls);
-          citationsToDisplay = foundUrls.map((url, idx) => ({
-            index: idx,
-            title: url,
-            url: url
-          }));
+          // Remove trailing punctuation from URLs
+          citationsToDisplay = foundUrls.map((url, idx) => {
+            const cleanUrl = url.replace(/[.,;:!?]+$/, '');
+            return {
+              index: idx,
+              title: cleanUrl,
+              url: cleanUrl
+            };
+          });
         }
       }
       
