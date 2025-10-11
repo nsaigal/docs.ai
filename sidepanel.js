@@ -133,10 +133,16 @@ document.addEventListener('DOMContentLoaded', function() {
       if (results && results[0] && results[0].result) {
         pageLinks = results[0].result;
         console.log('Extracted links:', pageLinks.length);
+        console.log('Sample links:', pageLinks.slice(0, 3));
+      } else {
+        console.log('No results from script execution');
       }
     } catch (err) {
       console.error('Error extracting links:', err);
+      console.error('Full error:', err);
     }
+    
+    console.log('Sending request with', pageLinks.length, 'links');
     
     // Disable button and show loading state
     submitButton.disabled = true;
@@ -186,14 +192,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
+      // Extract URLs from response text if no formal citations
+      let citationsToDisplay = data.citations || [];
+      
+      if (citationsToDisplay.length === 0) {
+        // Extract URLs from the response text
+        const urlRegex = /(https?:\/\/[^\s<>"]+)/g;
+        const foundUrls = data.result.match(urlRegex);
+        
+        if (foundUrls) {
+          console.log('Found URLs in response:', foundUrls);
+          citationsToDisplay = foundUrls.map((url, idx) => ({
+            index: idx,
+            title: url,
+            url: url
+          }));
+        }
+      }
+      
       // Display citations as hyperlinks at the bottom if available
-      if (data.citations && data.citations.length > 0) {
+      if (citationsToDisplay.length > 0) {
         citationsContainer.innerHTML = '';
         
         // Automatically navigate to the first citation
-        navigateToCitation(data.citations[0]);
+        navigateToCitation(citationsToDisplay[0]);
         
-        data.citations.forEach((citation, index) => {
+        citationsToDisplay.forEach((citation, index) => {
           const link = document.createElement('a');
           link.className = 'citation-link';
           link.href = '#';

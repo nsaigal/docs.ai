@@ -46,6 +46,10 @@ async def analyze_history(request: AnalyzeRequest):
             raise HTTPException(status_code=400, detail="No query provided")
         
         logger.info(f"Analyzing query...")
+        logger.info(f"Received {len(request.links)} links from page")
+        
+        if request.links:
+            logger.info(f"Sample links: {request.links[:3]}")
 
         domain = request.domain
 
@@ -64,20 +68,34 @@ async def analyze_history(request: AnalyzeRequest):
             links_context = "\n\nLinks available on the current page:\n"
             for link in request.links[:50]:  # Limit to first 50 links to avoid token limits
                 links_context += f"- {link.text}: {link.url}\n"
+            logger.info(f"Formatted {len(request.links[:50])} links for context")
         
-        prompt = f'''You are an expert developer relations that will guide the user to an answer to their query.
-        You will be given a query and domain of documentation.
-        Use the url_context tool to analyze the current page at {request.url} and the google_search tool to find additional relevant information from the domain {domain}.
-        Provide only the most relevant citation for your answer.
-        Only use the domain {domain} for your search. Contextualize your answer with the domain {domain}.
-        Here is the current URL: {request.url}
-        {links_context}
-        
-        Query: {request.query}
-        '''
+        prompt = f'''You are an expert developer relations assistant helping users navigate documentation efficiently.
 
+Your goal: Help the user find the EXACT documentation page that best answers their query.
+
+Current context:
+- User is on: {request.url}
+- Documentation domain: {domain}
+- Links present on the page: {links_context}
+
+INSTRUCTIONS:
+1. Use url_context to understand the current page content and structure
+2. Analyze the available links on the page - these are the most relevant navigation options
+3. Search and recommend pages ONLY from {domain}
+
+RESPONSE FORMAT:
+- Recommend the MOST SPECIFIC documentation page that answers their query
+- If the answer is on a linked page, explicitly reference that link
+- Prioritize pages from the current site structure over search results
+
+User Query: {request.query}
+
+Think: What specific page on {domain} would best answer this query?'''
+
+        logger.info(prompt)
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-2.5-flash",
             contents=prompt,
             config=config,
         )
