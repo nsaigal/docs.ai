@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const escalationCard = document.getElementById('escalation-card');
   const tavusTranscriptEl = document.getElementById('tavus-transcript');
   const tavusVideoEl = document.getElementById('tavus-video');
+  const tavusPromptInput = document.getElementById('tavus-prompt');
+  const tavusPlayButton = document.getElementById('tavus-play');
   const themeToggle = document.getElementById('theme-toggle');
   const logoContainer = document.getElementById('logo-container');
   const bodyElement = document.body;
@@ -19,16 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentTabId = null;
   let tavusConfig = null;
   let tavusPolling = null;
-  let currentTheme = 'classic';
+  let currentTheme = 'light';
 
   const storageAvailable = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
 
   function persistTheme(theme) {
+    const normalizedTheme = theme === 'dark' ? 'dark' : 'light';
     if (storageAvailable) {
-      chrome.storage.local.set({ uiTheme: theme }, () => {
+      chrome.storage.local.set({ uiTheme: normalizedTheme }, () => {
         if (chrome.runtime && chrome.runtime.lastError) {
           try {
-            localStorage.setItem('uiTheme', theme);
+            localStorage.setItem('uiTheme', normalizedTheme);
           } catch (err) {
             console.warn('Unable to persist theme preference', err);
           }
@@ -36,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     } else {
       try {
-        localStorage.setItem('uiTheme', theme);
+        localStorage.setItem('uiTheme', normalizedTheme);
       } catch (err) {
         console.warn('Unable to persist theme preference', err);
       }
@@ -47,9 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
     return new Promise((resolve) => {
       const fallback = () => {
         try {
-          resolve(localStorage.getItem('uiTheme') || 'classic');
+          const stored = localStorage.getItem('uiTheme');
+          resolve(mapStoredTheme(stored));
         } catch (err) {
-          resolve('classic');
+          resolve('light');
         }
       };
 
@@ -63,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (chrome.runtime && chrome.runtime.lastError) {
             fallback();
           } else {
-            resolve(result.uiTheme || 'classic');
+            resolve(mapStoredTheme(result.uiTheme));
           }
         });
       } catch (err) {
@@ -73,9 +77,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  function mapStoredTheme(stored) {
+    if (stored === 'dark' || stored === 'neon') {
+      return 'dark';
+    }
+    if (stored === 'light' || stored === 'classic') {
+      return 'light';
+    }
+    return stored ? stored : 'light';
+  }
+
   function applyTheme(theme) {
-    const useDarkMode = theme === 'neon';
-    currentTheme = useDarkMode ? 'neon' : 'classic';
+    const normalizedTheme = mapStoredTheme(theme);
+    const useDarkMode = normalizedTheme === 'dark';
+    currentTheme = useDarkMode ? 'dark' : 'light';
 
     bodyElement.classList.toggle('dark-mode', useDarkMode);
     if (logoContainer) {
@@ -84,18 +99,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (themeToggle) {
-      themeToggle.textContent = useDarkMode ? 'Disable Neon UI' : 'Enable Neon UI';
+      themeToggle.classList.toggle('is-dark', useDarkMode);
       themeToggle.setAttribute('aria-pressed', String(useDarkMode));
+      themeToggle.setAttribute(
+        'aria-label',
+        useDarkMode ? 'Switch to light mode' : 'Switch to dark mode'
+      );
     }
   }
 
   async function initializeTheme() {
     const savedTheme = await loadThemePreference();
-    applyTheme(savedTheme === 'neon' ? 'neon' : 'classic');
+    applyTheme(savedTheme);
   }
 
   themeToggle?.addEventListener('click', () => {
-    const nextTheme = currentTheme === 'neon' ? 'classic' : 'neon';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
     applyTheme(nextTheme);
     persistTheme(nextTheme);
   });
@@ -442,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  async function fetchTavusResponse() {
+  async function fetchTavusResponse(customPrompt) {
     if (!tavusTranscriptEl || !tavusVideoEl) {
       return;
     }
@@ -473,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
           avatar_id: avatarId,
           script: {
             type: 'text',
-            input_text: prompt,
+            input_text: customPrompt || prompt,
             context,
           },
           voice: 'default',
@@ -582,4 +601,36 @@ document.addEventListener('DOMContentLoaded', function() {
     tavusVideoEl.muted = true;
     tavusVideoEl.play().catch(() => {});
   }
+
+  tavusPlayButton?.addEventListener('click', async () => {
+    if (!tavusPromptInput) {
+      console.warn('Prompt input missing.');
+      return;
+    }
+
+    const message = tavusPromptInput.value.trim();
+    if (!message) {
+      tavusTranscriptEl.textContent = 'Enter a message for the avatar to speak.';
+      tavusPromptInput.focus();
+      return;
+    }
+
+    tavusPlayButton.disabled = true;
+    tavusPlayButton.textContent = 'Generating...';
+
+    try {
+      if (tavusVideoEl?.paused) {
+        tavusVideoEl.muted = true;
+        tavusVideoEl.play().catch(() => {});
+      }
+
+      await fetchTavusResponse(message);
+    } catch (error) {
+      console.error('Failed to trigger Tavus speech', error);
+      tavusTranscriptEl.textContent = 'Unable to generate speech. Please try again later.';
+    } finally {
+      tavusPlayButton.disabled = false;
+      tavusPlayButton.textContent = 'Play Avatar Response';
+    }
+  });
 });

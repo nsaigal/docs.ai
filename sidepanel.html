@@ -22,6 +22,17 @@
       font-size: 15px;
       transition: background 0.4s ease, color 0.4s ease;
     }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     .content {
       display: flex;
       flex-direction: column;
@@ -117,19 +128,63 @@
       background: #d9443d;
     }
     .theme-toggle {
-      background: transparent;
-      color: #334155;
-      border: 2px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
-    .theme-toggle:hover {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      border-radius: 999px;
+      border: none;
       background: #e2e8f0;
-      border-color: #94a3b8;
+      padding: 0;
+      cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .theme-toggle::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+      transition: transform 0.25s ease, background 0.2s ease;
+    }
+    .theme-toggle .icon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .theme-toggle .icon-sun {
+      left: 10px;
+      color: #f59e0b;
+      opacity: 1;
+    }
+    .theme-toggle .icon-moon {
+      right: 10px;
+      color: #0f172a;
+      opacity: 0.2;
+    }
+    .theme-toggle:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.35);
+    }
+    .theme-toggle.is-dark {
+      background: #1e293b;
+    }
+    .theme-toggle.is-dark::before {
+      transform: translateX(24px);
+      background: #0f172a;
+    }
+    .theme-toggle.is-dark .icon-sun {
+      opacity: 0.25;
+    }
+    .theme-toggle.is-dark .icon-moon {
+      opacity: 1;
+      color: #38bdf8;
     }
     .logo-container {
       display: none;
@@ -513,6 +568,107 @@
       gap: 18px;
       align-items: center;
     }
+    .tavus-input {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    .tavus-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+    body.dark-mode .tavus-label {
+      color: #00ffff;
+    }
+    .tavus-textarea {
+      width: 100%;
+      min-height: 96px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+    .tavus-textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+    }
+    body.dark-mode .tavus-textarea {
+      background: rgba(0, 255, 255, 0.05);
+      border-color: rgba(0, 255, 255, 0.2);
+      color: #e2e8f0;
+    }
+    body.dark-mode .tavus-textarea:focus {
+      border-color: #00ffff;
+      box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.15);
+    }
+    .tavus-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .tavus-play-button {
+      width: auto;
+      padding: 12px 20px;
+    }
+    .tavus-hint {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0;
+      flex: 1 1 200px;
+    }
+    body.dark-mode .tavus-hint {
+      color: rgba(226, 232, 240, 0.7);
+    }
+    .tavus-input {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tavus-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .tavus-textarea {
+      width: 100%;
+      min-height: 96px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tavus-textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+    }
+    .tavus-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .tavus-play-button {
+      width: auto;
+      padding: 12px 20px;
+    }
+    .tavus-hint {
+      font-size: 12px;
+      color: #64748b;
+      margin: 0;
+      flex: 1 1 200px;
+    }
     .speech-bubble {
       position: relative;
       background: #fff;
@@ -560,7 +716,11 @@
     <div class="header">
       <h1>Documentation Assistant</h1>
       <div class="header-actions">
-        <button id="theme-toggle" class="theme-toggle" aria-pressed="false">Enable Neon UI</button>
+        <button id="theme-toggle" class="theme-toggle" aria-pressed="false">
+          <span class="sr-only">Toggle light or dark mode</span>
+          <span class="icon icon-sun" aria-hidden="true">☀️</span>
+          <span class="icon icon-moon" aria-hidden="true">🌙</span>
+        </button>
         <button id="escalate" class="secondary">Tavus Escalation</button>
       </div>
     </div>
@@ -598,6 +758,14 @@
         <div class="escalation-description">Escalation channel primed. This demo uses a Tavus avatar feed responding to the debugging prompt below.</div>
       </div>
       <div class="avatar-section">
+        <div class="tavus-input">
+          <label class="tavus-label" for="tavus-prompt">Avatar prompt</label>
+          <textarea id="tavus-prompt" class="tavus-textarea" placeholder="Write the message you want the Tavus avatar to say..."></textarea>
+          <div class="tavus-actions">
+            <button id="tavus-play" class="submit-button tavus-play-button">Play Avatar Response</button>
+            <p class="tavus-hint">Avatar will speak the text and show a new response below.</p>
+          </div>
+        </div>
         <div class="speech-bubble" id="tavus-transcript">Loading Tavus response...</div>
         <div class="avatar-player">
           <video id="tavus-video" src="https://storage.googleapis.com/tavus-public-assets/demos/riya-debugging.mp4" poster="https://storage.googleapis.com/tavus-public-assets/demos/riya-poster.jpg" playsinline autoplay muted loop></video>
