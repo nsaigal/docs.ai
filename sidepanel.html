@@ -348,26 +348,31 @@
   </style>
 </head>
 <body>
-  <div class="domain-badge" id="domain-display">Loading...</div>
-  
-  <div class="query-section">
-    <input 
-      type="text" 
-      id="query-input" 
-      class="query-input" 
-      placeholder="Ask a question about this documentation..."
-    />
-    <button id="submit-button" class="submit-button">Ask</button>
+  <div class="content">
+    <div class="header">
+      <h1>Current Domain</h1>
+      <button id="escalate">Escalate Issue</button>
+    </div>
+    <div class="domain-box">
+      <div class="label">Domain:</div>
+      <div class="domain" id="domain">Loading...</div>
+    </div>
+    <button id="refresh">Refresh Domain</button>
   </div>
-  
-  <div id="answer-section" class="answer-section">
-    <div class="answer-header">Answer</div>
-    <div id="answer-content" class="answer-content">
-      <div id="answer-text"></div>
-      <div id="citations-container" class="citations-container"></div>
+  <div class="escalation-wrapper">
+    <div id="escalation-card" class="escalation-card">
+      <div class="escalation-header">
+        <div class="escalation-title">Tavus Support Bridge</div>
+        <div class="escalation-description">Escalation channel primed. This demo uses a sample Tavus avatar feed responding to a debugging prompt.</div>
+      </div>
+      <div class="avatar-section">
+        <div class="speech-bubble" id="tavus-transcript">Loading Tavus response...</div>
+        <div class="avatar-player">
+          <video id="tavus-video" src="https://storage.googleapis.com/tavus-public-assets/demos/riya-debugging.mp4" poster="https://storage.googleapis.com/tavus-public-assets/demos/riya-poster.jpg" playsinline autoplay muted loop></video>
+        </div>
+      </div>
     </div>
   </div>
-  
   <script src="sidepanel.js"></script>
 </body>
 </html>
