@@ -20,6 +20,7 @@
       background: #ffffff;
       color: #1e293b;
       font-size: 15px;
+      transition: background 0.4s ease, color 0.4s ease;
     }
     .content {
       display: flex;
@@ -37,6 +38,7 @@
     .header-actions {
       display: flex;
       gap: 8px;
+      align-items: center;
     }
     h1 {
       font-size: 22px;
@@ -113,6 +115,235 @@
     }
     .secondary:hover {
       background: #d9443d;
+    }
+    .theme-toggle {
+      background: transparent;
+      color: #334155;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .theme-toggle:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+    .logo-container {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    }
+    .logo-text {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #ff6b4a;
+      text-transform: uppercase;
+      position: relative;
+      display: inline-block;
+      padding: 4px 8px;
+    }
+    .logo-subtitle {
+      font-size: 11px;
+      color: #475569;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 8px;
+      opacity: 0.7;
+      font-weight: 600;
+    }
+    body.dark-mode {
+      background: #0a0e27;
+      color: #00ff9f;
+      background-image:
+        linear-gradient(rgba(0, 255, 159, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 159, 0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+      font-size: 13px;
+    }
+    body.dark-mode .content {
+      gap: 20px;
+    }
+    body.dark-mode .header h1 {
+      color: #00ffff;
+    }
+    body.dark-mode .domain-badge {
+      background: rgba(255, 0, 255, 0.1);
+      border: 1px solid #ff00ff;
+      color: #ff00ff;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+    }
+    body.dark-mode .domain-badge::before {
+      background: #ff00ff;
+    }
+    body.dark-mode .query-input {
+      background: rgba(0, 255, 255, 0.05);
+      border: 1px solid #00ffff;
+      color: #00ffff;
+    }
+    body.dark-mode .query-input::placeholder {
+      color: rgba(0, 255, 255, 0.4);
+    }
+    body.dark-mode .query-input:focus {
+      border-color: #00ffff;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), inset 0 0 10px rgba(0, 255, 255, 0.1);
+      background: rgba(0, 255, 255, 0.08);
+    }
+    body.dark-mode .submit-button {
+      background: linear-gradient(135deg, rgba(0, 255, 159, 0.2), rgba(0, 255, 255, 0.2));
+      color: #00ff9f;
+      border: 2px solid #00ff9f;
+      border-radius: 8px;
+    }
+    body.dark-mode .submit-button:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(0, 255, 159, 0.3), rgba(0, 255, 255, 0.3));
+      box-shadow: 0 0 20px rgba(0, 255, 159, 0.6), inset 0 0 20px rgba(0, 255, 159, 0.2);
+      transform: translateY(-1px);
+    }
+    body.dark-mode .answer-section {
+      margin-top: 24px;
+    }
+    body.dark-mode .answer-header {
+      color: #ff00ff;
+      text-shadow: 0 0 10px #ff00ff;
+      letter-spacing: 2px;
+    }
+    body.dark-mode .answer-content {
+      background: rgba(10, 20, 40, 0.8);
+      border: 1px solid rgba(0, 255, 159, 0.3);
+      color: #c0c0c0;
+      box-shadow: 0 0 15px rgba(0, 255, 159, 0.2);
+    }
+    body.dark-mode #answer-text h1,
+    body.dark-mode #answer-text h2,
+    body.dark-mode #answer-text h3,
+    body.dark-mode #answer-text h4 {
+      color: #00ffff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    body.dark-mode #answer-text h2 {
+      color: #ff00ff;
+    }
+    body.dark-mode #answer-text h3 {
+      color: #00ff9f;
+    }
+    body.dark-mode #answer-text h4 {
+      color: #ffff00;
+    }
+    body.dark-mode #answer-text p,
+    body.dark-mode #answer-text li {
+      color: #c0c0c0;
+    }
+    body.dark-mode #answer-text strong {
+      color: #00ffff;
+    }
+    body.dark-mode #answer-text em {
+      color: #ff00ff;
+    }
+    body.dark-mode #answer-text code {
+      background: rgba(255, 0, 255, 0.1);
+      border: 1px solid rgba(255, 0, 255, 0.3);
+      color: #ff00ff;
+    }
+    body.dark-mode #answer-text pre {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 159, 0.3);
+      box-shadow: inset 0 0 10px rgba(0, 255, 159, 0.1);
+    }
+    body.dark-mode #answer-text pre code {
+      color: #00ff9f;
+    }
+    body.dark-mode #answer-text blockquote {
+      border-left: 3px solid #ff00ff;
+      color: #aaa;
+    }
+    body.dark-mode #answer-text a {
+      color: #00ffff;
+      border-bottom: 1px dotted rgba(0, 255, 255, 0.5);
+    }
+    body.dark-mode #answer-text a:hover {
+      border-bottom: 1px solid #00ffff;
+    }
+    body.dark-mode .citations-container {
+      border-top: 1px solid rgba(0, 255, 255, 0.2);
+    }
+    body.dark-mode .citation-link {
+      color: #00ffff;
+      border: 1px solid #00ffff;
+      background: rgba(0, 255, 255, 0.05);
+    }
+    body.dark-mode .citation-link:hover {
+      background: rgba(0, 255, 255, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+    body.dark-mode .loading-text {
+      color: #ffff00;
+    }
+    body.dark-mode .error-text {
+      color: #ff0066;
+      background: rgba(255, 0, 102, 0.1);
+      border: 1px solid #ff0066;
+      box-shadow: 0 0 15px rgba(255, 0, 102, 0.3);
+    }
+    body.dark-mode .theme-toggle {
+      color: #00ff9f;
+      border-color: rgba(0, 255, 159, 0.4);
+      background: rgba(0, 255, 159, 0.08);
+    }
+    body.dark-mode .theme-toggle:hover {
+      background: rgba(0, 255, 159, 0.15);
+      border-color: rgba(0, 255, 159, 0.7);
+    }
+    body.dark-mode .header-actions {
+      gap: 12px;
+    }
+    body.dark-mode .escalation-card {
+      background-color: rgba(10, 20, 40, 0.85);
+      border: 1px solid rgba(0, 255, 159, 0.3);
+      color: #e2e8f0;
+    }
+    body.dark-mode .speech-bubble {
+      background: rgba(10, 20, 40, 0.9);
+      border: 2px solid #f25c54;
+      color: #f8fafc;
+    }
+    body.dark-mode .speech-bubble::after {
+      background: rgba(10, 20, 40, 0.9);
+      border-color: #f25c54;
+    }
+    body.dark-mode .avatar-player {
+      background: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+    }
+    .logo-container.active,
+    body.dark-mode .logo-container {
+      display: block;
+      border-color: rgba(0, 255, 159, 0.2);
+    }
+    .logo-container.active .logo-text,
+    body.dark-mode .logo-text {
+      color: #ff6b4a;
+      text-shadow:
+        2px 0 0 #ff6b4a,
+        -2px 0 0 #ff6b4a,
+        0 2px 0 #ff6b4a,
+        0 -2px 0 #ff6b4a,
+        2px 2px 0 rgba(0, 0, 0, 0.8);
+    }
+    .logo-container.active .logo-subtitle,
+    body.dark-mode .logo-subtitle {
+      color: #00ff9f;
+      text-shadow: 0 0 5px rgba(0, 255, 159, 0.5);
     }
     .answer-section {
       display: none;
@@ -329,8 +560,14 @@
     <div class="header">
       <h1>Documentation Assistant</h1>
       <div class="header-actions">
+        <button id="theme-toggle" class="theme-toggle" aria-pressed="false">Enable Neon UI</button>
         <button id="escalate" class="secondary">Tavus Escalation</button>
       </div>
+    </div>
+
+    <div id="logo-container" class="logo-container" aria-hidden="true">
+      <div class="logo-text">DOC.AI</div>
+      <div class="logo-subtitle">Documentation Assistant</div>
     </div>
 
     <div class="domain-badge" id="domain-display">Loading...</div>

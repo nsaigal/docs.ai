@@ -10,12 +10,95 @@ document.addEventListener('DOMContentLoaded', function() {
   const escalationCard = document.getElementById('escalation-card');
   const tavusTranscriptEl = document.getElementById('tavus-transcript');
   const tavusVideoEl = document.getElementById('tavus-video');
+  const themeToggle = document.getElementById('theme-toggle');
+  const logoContainer = document.getElementById('logo-container');
+  const bodyElement = document.body;
 
   let currentDomain = '';
   let currentURL = '';
   let currentTabId = null;
   let tavusConfig = null;
   let tavusPolling = null;
+  let currentTheme = 'classic';
+
+  const storageAvailable = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
+
+  function persistTheme(theme) {
+    if (storageAvailable) {
+      chrome.storage.local.set({ uiTheme: theme }, () => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          try {
+            localStorage.setItem('uiTheme', theme);
+          } catch (err) {
+            console.warn('Unable to persist theme preference', err);
+          }
+        }
+      });
+    } else {
+      try {
+        localStorage.setItem('uiTheme', theme);
+      } catch (err) {
+        console.warn('Unable to persist theme preference', err);
+      }
+    }
+  }
+
+  function loadThemePreference() {
+    return new Promise((resolve) => {
+      const fallback = () => {
+        try {
+          resolve(localStorage.getItem('uiTheme') || 'classic');
+        } catch (err) {
+          resolve('classic');
+        }
+      };
+
+      if (!storageAvailable) {
+        fallback();
+        return;
+      }
+
+      try {
+        chrome.storage.local.get(['uiTheme'], (result) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            fallback();
+          } else {
+            resolve(result.uiTheme || 'classic');
+          }
+        });
+      } catch (err) {
+        console.warn('Unable to load theme preference', err);
+        fallback();
+      }
+    });
+  }
+
+  function applyTheme(theme) {
+    const useDarkMode = theme === 'neon';
+    currentTheme = useDarkMode ? 'neon' : 'classic';
+
+    bodyElement.classList.toggle('dark-mode', useDarkMode);
+    if (logoContainer) {
+      logoContainer.classList.toggle('active', useDarkMode);
+      logoContainer.setAttribute('aria-hidden', String(!useDarkMode));
+    }
+
+    if (themeToggle) {
+      themeToggle.textContent = useDarkMode ? 'Disable Neon UI' : 'Enable Neon UI';
+      themeToggle.setAttribute('aria-pressed', String(useDarkMode));
+    }
+  }
+
+  async function initializeTheme() {
+    const savedTheme = await loadThemePreference();
+    applyTheme(savedTheme === 'neon' ? 'neon' : 'classic');
+  }
+
+  themeToggle?.addEventListener('click', () => {
+    const nextTheme = currentTheme === 'neon' ? 'classic' : 'neon';
+    applyTheme(nextTheme);
+    persistTheme(nextTheme);
+  });
   
   // Simple markdown renderer
   function renderMarkdown(text) {
@@ -73,23 +156,57 @@ document.addEventListener('DOMContentLoaded', function() {
       .replace(/(<\/blockquote>)<\/p>/g, '$1');
   }
 
-  // Get the current active tab and extract its domain
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    if (tabs && tabs.length > 0) {
-      currentTabId = tabs[0].id;
-      currentURL = tabs[0].url;
-      
-      try {
-        const urlObj = new URL(currentURL);
-        currentDomain = urlObj.hostname;
-        domainDisplay.textContent = currentDomain;
-      } catch (err) {
-        domainDisplay.textContent = 'Unable to extract domain';
-      }
-    } else {
+  function updateDomainFromTab(tab) {
+    if (!tab) {
       domainDisplay.textContent = 'No active tab found';
+      return;
+    }
+
+    currentTabId = tab.id;
+    currentURL = tab.url;
+
+    if (!currentURL) {
+      domainDisplay.textContent = 'Unable to extract domain';
+      return;
+    }
+
+    try {
+      const urlObj = new URL(currentURL);
+      currentDomain = urlObj.hostname;
+      domainDisplay.textContent = currentDomain;
+    } catch (err) {
+      domainDisplay.textContent = 'Unable to extract domain';
+    }
+  }
+
+  function refreshActiveTab() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (chrome.runtime && chrome.runtime.lastError) {
+        console.warn('Unable to query tabs', chrome.runtime.lastError);
+        return;
+      }
+
+      if (tabs && tabs.length > 0) {
+        updateDomainFromTab(tabs[0]);
+      } else {
+        domainDisplay.textContent = 'No active tab found';
+      }
+    });
+  }
+
+  refreshActiveTab();
+
+  chrome.tabs.onActivated.addListener(() => {
+    refreshActiveTab();
+  });
+
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (tab.active && changeInfo.status === 'complete' && tab.url) {
+      updateDomainFromTab(tab);
     }
   });
+
+  initializeTheme();
 
   chrome.tabs.onActivated.addListener(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
