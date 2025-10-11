@@ -6,9 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const answerText = document.getElementById('answer-text');
   const citationsContainer = document.getElementById('citations-container');
   
+  const escalateBtn = document.getElementById('escalate');
+  const escalationCard = document.getElementById('escalation-card');
+  const tavusTranscriptEl = document.getElementById('tavus-transcript');
+  const tavusVideoEl = document.getElementById('tavus-video');
+
   let currentDomain = '';
   let currentURL = '';
   let currentTabId = null;
+  let tavusConfig = null;
+  let tavusPolling = null;
   
   // Simple markdown renderer
   function renderMarkdown(text) {
@@ -81,6 +88,34 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     } else {
       domainDisplay.textContent = 'No active tab found';
+    }
+  });
+
+  chrome.tabs.onActivated.addListener(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (!tabs || !tabs.length) {
+        domainDisplay.textContent = 'No active tab found';
+        return;
+      }
+      try {
+        const urlObj = new URL(tabs[0].url || '');
+        currentDomain = urlObj.hostname;
+        domainDisplay.textContent = currentDomain;
+      } catch (err) {
+        domainDisplay.textContent = 'Unable to extract domain';
+      }
+    });
+  });
+
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (tab.active && changeInfo.status === 'complete' && tab.url) {
+      try {
+        const urlObj = new URL(tab.url);
+        currentDomain = urlObj.hostname;
+        domainDisplay.textContent = currentDomain;
+      } catch (err) {
+        domainDisplay.textContent = 'Unable to extract domain';
+      }
     }
   });
 
@@ -250,4 +285,184 @@ document.addEventListener('DOMContentLoaded', function() {
       submitButton.click();
     }
   });
+
+  // Tavus escalation logic
+  async function loadTavusConfig() {
+    if (tavusConfig) {
+      return tavusConfig;
+    }
+
+    try {
+      const response = await fetch(chrome.runtime.getURL('tavus-config.json'));
+      if (!response.ok) {
+        throw new Error('Missing Tavus config. Run scripts/setup-tavus.js');
+      }
+      tavusConfig = await response.json();
+      return tavusConfig;
+    } catch (error) {
+      console.error('Failed to load Tavus config', error);
+      tavusTranscriptEl.textContent = 'Tavus configuration missing. Please run setup.';
+      return null;
+    }
+  }
+
+  escalateBtn?.addEventListener('click', async () => {
+    if (!escalationCard || !tavusTranscriptEl || !tavusVideoEl) {
+      console.warn('Tavus UI elements missing.');
+      return;
+    }
+
+    escalationCard.classList.add('visible');
+    escalationCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+    if (tavusVideoEl?.paused) {
+      tavusVideoEl.muted = true;
+      tavusVideoEl.play().catch(() => {});
+    }
+
+    if (!tavusTranscriptEl.dataset.loaded) {
+      await fetchTavusResponse();
+    }
+  });
+
+  async function fetchTavusResponse() {
+    if (!tavusTranscriptEl || !tavusVideoEl) {
+      return;
+    }
+
+    const config = await loadTavusConfig();
+    if (!config) {
+      tavusTranscriptEl.textContent = 'Tavus setup incomplete.';
+      return;
+    }
+
+    const { apiKey, avatarId, prompt, context, pollingIntervalMs = 3000, pollingAttempts = 15 } = config;
+
+    if (!apiKey || !avatarId) {
+      tavusTranscriptEl.textContent = 'Tavus API key or avatar ID missing in config.';
+      return;
+    }
+
+    try {
+      tavusTranscriptEl.textContent = 'Connecting to Tavus...';
+
+      const response = await fetch('https://api.tavus.io/v2/avatars/speeches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          avatar_id: avatarId,
+          script: {
+            type: 'text',
+            input_text: prompt,
+            context,
+          },
+          voice: 'default',
+          subtitles: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Tavus API error: ${response.status}`);
+      }
+
+      const { speech_id } = await response.json();
+      tavusTranscriptEl.textContent = 'Avatar is preparing a response...';
+
+      await pollSpeechStatus(speech_id, pollingIntervalMs, pollingAttempts);
+    } catch (error) {
+      console.error('Failed to load Tavus response', error);
+      tavusTranscriptEl.textContent = 'Unable to load Tavus response. Please try again later.';
+    }
+  }
+
+  async function pollSpeechStatus(speechId, intervalMs, attempts) {
+    if (!tavusTranscriptEl || !tavusVideoEl) {
+      return;
+    }
+
+    const config = await loadTavusConfig();
+    if (!config) return;
+
+    const { apiKey, fallbackVideoUrl, fallbackPosterUrl } = config;
+
+    let attempt = 0;
+    clearInterval(tavusPolling);
+
+    tavusPolling = setInterval(async () => {
+      attempt += 1;
+
+      if (attempt > attempts) {
+        clearInterval(tavusPolling);
+        tavusTranscriptEl.textContent = 'Tavus response timed out. Showing fallback video.';
+        setFallbackVideo();
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://api.tavus.io/v2/avatars/speeches/${speechId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Tavus polling error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'completed') {
+          clearInterval(tavusPolling);
+
+          const transcript = data.transcription || data.script?.input_text || 'No transcript available.';
+          const videoUrl = data.assets?.video_url;
+
+          tavusTranscriptEl.textContent = transcript;
+          tavusTranscriptEl.dataset.loaded = 'true';
+
+          if (videoUrl) {
+            tavusVideoEl.src = videoUrl;
+            tavusVideoEl.poster = data.assets?.poster_image || fallbackPosterUrl;
+            tavusVideoEl.muted = false;
+            tavusVideoEl.play().catch((error) => {
+              console.warn('Autoplay blocked, keeping video muted.', error);
+              tavusVideoEl.muted = true;
+            });
+          } else {
+            setFallbackVideo();
+          }
+        } else if (data.status === 'failed') {
+          clearInterval(tavusPolling);
+          tavusTranscriptEl.textContent = 'Tavus speech failed. Showing fallback video.';
+          setFallbackVideo();
+        }
+      } catch (error) {
+        console.error('Error polling Tavus speech', error);
+      }
+    }, intervalMs);
+  }
+
+  async function setFallbackVideo() {
+    if (!tavusVideoEl) {
+      return;
+    }
+
+    const config = await loadTavusConfig();
+    if (!config) return;
+
+    const { fallbackVideoUrl, fallbackPosterUrl } = config;
+    if (fallbackVideoUrl) {
+      tavusVideoEl.src = fallbackVideoUrl;
+    }
+    if (fallbackPosterUrl) {
+      tavusVideoEl.poster = fallbackPosterUrl;
+    }
+    tavusVideoEl.muted = true;
+    tavusVideoEl.play().catch(() => {});
+  }
 });

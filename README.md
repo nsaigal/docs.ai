@@ -65,6 +65,26 @@ A Chrome extension that helps you navigate documentation efficiently using AI.
 2. The side panel will open on the right
 3. Navigate to any documentation site
 4. Ask questions about the docs in the side panel!
+5. Click **Escalate Issue** to open the Tavus escalation card. The extension reads the Tavus API key from `tavus-config.json` (generated below), calls Tavus to synthesize an avatar response, and displays the live transcript in a speech bubble.
+
+### Step 5: Configure Tavus Escalation (Optional but Recommended)
+
+1. Ensure you are in the conda environment:
+   ```bash
+   conda activate yc_hackathon
+   ```
+2. Add your Tavus API key to the `.env` file (same file that holds `GEMINI_API_KEY`):
+   ```
+   TAVUS_API_KEY=your_tavus_api_key
+   ```
+3. Generate/update the `tavus-config.json` file (the script now reads `.env` automatically):
+   ```bash
+   node scripts/setup-tavus.js
+   ```
+   This writes `tavus-config.json` (ignored by git) with your key, avatar ID, prompt, and fallback assets.
+4. Reload the extension in Chrome so it can read the new config file.
+
+> The manifest already allows requests to `http://localhost:3001` for the FastAPI backend. Tavus API calls originate from the browser directly to `https://api.tavus.io` using the API key in `tavus-config.json`.
 
 ## Troubleshooting
 

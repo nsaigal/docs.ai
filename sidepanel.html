@@ -9,18 +9,17 @@
     
     body {
       width: 100%;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 15px;
-      background: #ffffff;
-      color: #1e293b;
+      margin: 0;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 0;
       min-height: 100vh;
+      background: #ffffff;
+      color: #1e293b;
+      font-size: 15px;
     }
     .content {
       display: flex;
@@ -29,242 +28,220 @@
       padding: 24px;
       box-sizing: border-box;
     }
-    .escalation-wrapper {
-      margin-top: auto;
-      padding: 0 24px 24px;
-      box-sizing: border-box;
-      width: 100%;
-    }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
-    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0;
+      color: #0f172a;
+      font-weight: 700;
+    }
     .domain-badge {
-      display: inline-block;
-      padding: 6px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
       background: #f1f5f9;
-      border-radius: 6px;
+      border-radius: 999px;
       font-size: 13px;
       color: #64748b;
       font-weight: 500;
-      margin-bottom: 20px;
+      align-self: flex-start;
     }
-    
+    .domain-badge::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+    }
     .query-section {
-      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    
     .query-input {
       width: 100%;
-      padding: 12px 16px;
-      font-size: 24px;
+      padding: 14px 18px;
+      font-size: 16px;
       border: 2px solid #e2e8f0;
       border-radius: 12px;
-      margin-bottom: 10px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      font-family: inherit;
     }
-    
     .query-input:focus {
       outline: none;
-      border-color: #139c53;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
     }
-    
     .submit-button {
       width: 100%;
-      padding: 12px 24px;
-      background: #139c53;
-      color: white;
+      padding: 14px 18px;
+      background: #1a73e8;
+      color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 15px;
+      border-radius: 10px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      transition: background 0.2s;
+      transition: background 0.2s ease;
     }
-    
     .submit-button:hover:not(:disabled) {
-      background: #0d7a3f;
+      background: #1557b0;
     }
-    
     .submit-button:disabled {
       background: #cbd5e1;
       cursor: not-allowed;
     }
-    
+    .secondary {
+      background: #f25c54;
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      width: auto;
+    }
+    .secondary:hover {
+      background: #d9443d;
+    }
     .answer-section {
       display: none;
-      margin-top: 24px;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
     }
-    
     .answer-section.show {
-      display: block;
+      display: flex;
     }
-    
     .answer-header {
       font-size: 14px;
       font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 12px;
     }
-    
     .answer-content {
-      padding: 20px;
       background: #f8fafc;
-      border-radius: 8px;
+      border-radius: 12px;
+      padding: 20px;
       line-height: 1.6;
       color: #1e293b;
+      border: 1px solid #e2e8f0;
     }
-    
     #answer-text h1,
     #answer-text h2,
     #answer-text h3,
     #answer-text h4 {
       margin-top: 16px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 600;
       color: #0f172a;
     }
-    
     #answer-text h1 {
       font-size: 20px;
       border-bottom: 1px solid #e2e8f0;
       padding-bottom: 8px;
     }
-    
     #answer-text h2 {
       font-size: 18px;
     }
-    
     #answer-text h3 {
       font-size: 16px;
     }
-    
     #answer-text h4 {
       font-size: 15px;
     }
-    
     #answer-text p {
       margin: 12px 0;
     }
-    
     #answer-text ul,
     #answer-text ol {
       margin: 12px 0;
       padding-left: 24px;
     }
-    
     #answer-text li {
       margin: 6px 0;
     }
-    
-    #answer-text strong {
-      font-weight: 600;
-      color: #0f172a;
-    }
-    
-    #answer-text em {
-      font-style: italic;
-    }
-    
     #answer-text code {
       background: #e2e8f0;
       padding: 2px 6px;
       border-radius: 4px;
       font-family: 'Monaco', 'Courier New', monospace;
       font-size: 13px;
-      color: #1e293b;
     }
-    
     #answer-text pre {
       background: #e2e8f0;
       padding: 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow-x: auto;
       margin: 12px 0;
     }
-    
-    #answer-text pre code {
-      background: none;
-      padding: 0;
-    }
-    
     #answer-text blockquote {
       margin: 12px 0;
       padding-left: 16px;
-      border-left: 3px solid #139c53;
-      color: #64748b;
+      border-left: 3px solid #1a73e8;
+      color: #334155;
       font-style: italic;
     }
-    
     #answer-text a {
-      color: #139c53;
+      color: #1a73e8;
       text-decoration: none;
+      font-weight: 600;
     }
-    
     #answer-text a:hover {
       text-decoration: underline;
     }
-    
     .citations-container {
       margin-top: 16px;
       padding-top: 16px;
       border-top: 1px solid #e2e8f0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    
     .citation-link {
-      display: inline-block;
-      color: #139c53;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      color: #1a73e8;
+      font-weight: 600;
       text-decoration: none;
-      font-size: 14px;
-      margin-right: 16px;
-      margin-bottom: 8px;
-      transition: color 0.2s;
+      transition: background 0.2s ease, color 0.2s ease;
     }
-    
     .citation-link:hover {
-      color: #0d7a3f;
-      text-decoration: underline;
+      background: #1a73e8;
+      color: #ffffff;
     }
-    
-    .citation-link::before {
-      content: "[";
-      color: #64748b;
-    }
-    #escalate {
-      margin-top: 0;
-      width: auto;
-      padding: 12px 20px;
-      background-color: #f25c54;
-      font-size: 15px;
-      border-radius: 12px;
-    }
-    #escalate:hover {
-      background-color: #d9443d;
-    }
-    
-    .citation-link::after {
-      content: "]";
-      color: #64748b;
-    }
-    
     .loading-text {
       color: #64748b;
       font-style: italic;
     }
-    
     .error-text {
       color: #dc2626;
-      padding: 16px;
       background: #fef2f2;
-      border-radius: 8px;
       border: 1px solid #fecaca;
+      padding: 14px;
+      border-radius: 10px;
+    }
+    .escalation-wrapper {
+      margin-top: auto;
+      padding: 0 24px 24px;
+      box-sizing: border-box;
+      width: 100%;
     }
     .escalation-card {
       display: none;
@@ -350,20 +327,38 @@
 <body>
   <div class="content">
     <div class="header">
-      <h1>Current Domain</h1>
-      <button id="escalate">Escalate Issue</button>
+      <h1>Documentation Assistant</h1>
+      <div class="header-actions">
+        <button id="escalate" class="secondary">Tavus Escalation</button>
+      </div>
     </div>
-    <div class="domain-box">
-      <div class="label">Domain:</div>
-      <div class="domain" id="domain">Loading...</div>
+
+    <div class="domain-badge" id="domain-display">Loading...</div>
+
+    <div class="query-section">
+      <input
+        type="text"
+        id="query-input"
+        class="query-input"
+        placeholder="Ask a question about this page..."
+      />
+      <button id="submit-button" class="submit-button">Ask</button>
     </div>
-    <button id="refresh">Refresh Domain</button>
+
+    <div id="answer-section" class="answer-section">
+      <div class="answer-header">Answer</div>
+      <div id="answer-content" class="answer-content">
+        <div id="answer-text"></div>
+        <div id="citations-container" class="citations-container"></div>
+      </div>
+    </div>
   </div>
+
   <div class="escalation-wrapper">
     <div id="escalation-card" class="escalation-card">
       <div class="escalation-header">
         <div class="escalation-title">Tavus Support Bridge</div>
-        <div class="escalation-description">Escalation channel primed. This demo uses a sample Tavus avatar feed responding to a debugging prompt.</div>
+        <div class="escalation-description">Escalation channel primed. This demo uses a Tavus avatar feed responding to the debugging prompt below.</div>
       </div>
       <div class="avatar-section">
         <div class="speech-bubble" id="tavus-transcript">Loading Tavus response...</div>

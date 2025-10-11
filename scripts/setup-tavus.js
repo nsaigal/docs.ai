@@ -2,6 +2,14 @@
 const fs = require('fs');
 const path = require('path');
 
+const dotenv = require('dotenv');
+
+const envPath = path.join(__dirname, '..', '.env');
+
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+}
+
 const API_KEY = process.env.TAVUS_API_KEY;
 
 if (!API_KEY) {
