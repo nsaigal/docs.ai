@@ -27,7 +27,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+if not gemini_api_key:
+    raise RuntimeError(
+        "GEMINI_API_KEY is not set. Add it to your environment or `.env` file before starting the server."
+    )
+
+client = genai.Client(api_key=gemini_api_key)
 
 class PageLink(BaseModel):
     text: str

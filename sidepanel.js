@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pageLinks = results[0].result;
         console.log('Extracted links:', pageLinks.length);
         console.log('Sample links:', pageLinks.slice(0, 3));
-      } else {
+    } else {
         console.log('No results from script execution');
       }
     } catch (err) {
