@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "YC Hack",
+  "version": "1.0",
+  "description": "Display your 20 most recent sites visited",
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "scripting",
+    "activeTab"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open YC Hack"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
