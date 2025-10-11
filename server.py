@@ -36,6 +36,17 @@ if not gemini_api_key:
 
 client = genai.Client(api_key=gemini_api_key)
 
+INLINE_ASSISTANT_MODEL = os.getenv("INLINE_ASSISTANT_MODEL", "gemini-2.5-pro")
+MAX_SELECTION_CHARS = 1000
+MAX_LINKS = 40
+
+
+class ExplainCodeRequest(BaseModel):
+    snippet: str
+    language: str | None = None
+    url: str | None = None
+    title: str | None = None
+
 class PageLink(BaseModel):
     text: str
     url: str
@@ -45,6 +56,7 @@ class AnalyzeRequest(BaseModel):
     domain: str
     url: str
     links: list[PageLink] = []
+    selectionText: str | None = None
 
 @app.post("/analyze")
 async def analyze_history(request: AnalyzeRequest):
@@ -62,49 +74,66 @@ async def analyze_history(request: AnalyzeRequest):
 
         tools = [
             {"url_context": {}},
-            # {"google_search": {}},
         ]
 
-        config = types.GenerateContentConfig(
-            tools=tools
+        # Format links for the prompt
+        links_context_lines = []
+        if request.links:
+            for link in request.links[:MAX_LINKS]:
+                text = (link.text or "").strip()
+                if text:
+                    if len(text) > 90:
+                        text = text[:87] + "..."
+                    links_context_lines.append(f"- {text}: {link.url}")
+                else:
+                    links_context_lines.append(f"- {link.url}")
+
+        links_context = "\n".join(links_context_lines) if links_context_lines else "- (no navigational links captured)"
+        if links_context_lines:
+            logger.info(f"Formatted {len(links_context_lines)} links for context")
+        
+        selection_snippet = (request.selectionText or "").strip()
+        if selection_snippet:
+            selection_snippet = selection_snippet[:MAX_SELECTION_CHARS]
+
+        system_instruction = (
+            "You are the inline documentation guide for YC Hack. "
+            "Respond succinctly (under 180 words), prioritize immediate guidance, "
+            "and cite the exact navigation path or link text when pointing to other pages."
         )
 
-        # Format links for the prompt
-        links_context = ""
-        if request.links:
-            links_context = "\n\nLinks available on the current page:\n"
-            for link in request.links[:50]:  # Limit to first 50 links to avoid token limits
-                links_context += f"- {link.text}: {link.url}\n"
-            logger.info(f"Formatted {len(request.links[:50])} links for context")
-        
-        prompt = f'''You are an expert developer relations assistant helping users navigate documentation efficiently.
+        highlighted_block = selection_snippet if selection_snippet else "(none provided)"
 
-Your goal: Help the user find the EXACT documentation page that best answers their query.
+        prompt = f"""
+### Workspace Snapshot
+- Active URL: {request.url}
+- Domain focus: {domain}
 
-Current context:
-- User is on: {request.url}
-- Documentation domain: {domain}
-- Links present on the page: {links_context}
+### Page Navigation (top {len(links_context_lines)} links)
+{links_context}
 
-INSTRUCTIONS:
-1. Use url_context to understand the current page content and structure
-2. Analyze the available links on the page - these are the most relevant navigation options
-3. Search and recommend pages ONLY from {domain}
+### Highlighted Passage
+{highlighted_block}
 
-RESPONSE FORMAT:
-- Recommend the MOST SPECIFIC documentation page that answers their query
-- If the answer is on a linked page, explicitly reference that link
-- Prioritize pages from the current site structure over search results
+### Task
+Question: {request.query}
 
-User Query: {request.query}
+### Response Guidelines
+1. Address the highlighted passage first if it exists.
+2. Provide clear, numbered or bulleted steps when applicable.
+3. Reference the most relevant link text from the navigation list above when suggesting navigation.
+4. Stick to resources on {domain} unless absolutely necessary.
+"""
 
-Think: What specific page on {domain} would best answer this query?'''
+        logger.info("Prepared inline assistant prompt")
 
-        logger.info(prompt)
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=INLINE_ASSISTANT_MODEL,
             contents=prompt,
-            config=config,
+            config=types.GenerateContentConfig(
+                tools=tools,
+                system_instruction=system_instruction
+            ),
         )
 
         logger.info(response.text)
@@ -157,6 +186,58 @@ Think: What specific page on {domain} would best answer this query?'''
     except Exception as error:
         print(f"Analysis error: {error}")
         raise HTTPException(status_code=500, detail="Analysis failed")
+
+@app.post("/explain-code")
+async def explain_code(request: ExplainCodeRequest):
+    if not request.snippet or not request.snippet.strip():
+        raise HTTPException(status_code=400, detail="Code snippet is required")
+
+    try:
+        system_instruction = (
+            "You are a meticulous code explainer."
+            " Provide a concise, step-by-step explanation of the provided code snippet."
+            " Highlight key operations, control flow, and important data transformations."
+            " Assume the reader is technical but unfamiliar with the snippet's context."
+            " Avoid speculative functionality beyond what can be inferred from the code."
+            " Respond in under 220 words."
+        )
+
+        language_hint = f"Language: {request.language}\n" if request.language else ""
+        source_hint = ""
+        if request.url:
+            source_hint += f"Source URL: {request.url}\n"
+        if request.title:
+            source_hint += f"Page Title: {request.title}\n"
+
+        prompt = (
+            "### Context\n"
+            f"{language_hint}{source_hint}"
+            "The user clicked an explain button for the following code block.\n\n"
+            "### Code Snippet\n"
+            "```\n"
+            f"{request.snippet}\n"
+            "```\n\n"
+            "### Instructions\n"
+            "1. Summarize the snippet's purpose in one sentence.\n"
+            "2. Provide a clear, step-by-step walkthrough of what the code does.\n"
+            "3. Call out important variables, functions, or API calls.\n"
+            "4. Mention any assumptions or potential side effects.\n"
+        )
+
+        response = client.models.generate_content(
+            model=INLINE_ASSISTANT_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+            ),
+        )
+
+        return {"result": response.text}
+
+    except Exception as error:
+        logger.error(f"Explain code error: {error}")
+        raise HTTPException(status_code=500, detail="Explain code failed")
+
 
 @app.get("/")
 async def root():

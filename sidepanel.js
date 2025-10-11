@@ -24,6 +24,86 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentTheme = 'light';
 
   const storageAvailable = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
+  const sidePanelPort = chrome.runtime?.connect ? chrome.runtime.connect({ name: 'YCH_SIDE_PANEL' }) : null;
+
+  sidePanelPort?.onMessage.addListener((message) => {
+    if (message?.type === 'CODE_EXPLAIN_REQUEST') {
+      handleExplainRequest(message.tabId, message.payload);
+    }
+  });
+
+  function requestLatestExplain(tabId) {
+    if (!sidePanelPort || typeof tabId !== 'number') {
+      return;
+    }
+
+    sidePanelPort.postMessage({
+      type: 'CODE_EXPLAIN_CONSUME',
+      tabId
+    });
+  }
+
+  chrome.runtime?.onMessage?.addListener?.((message) => {
+    if (message?.type === 'CODE_EXPLAIN_READY' && typeof message.tabId === 'number') {
+      requestLatestExplain(message.tabId);
+    }
+  });
+
+  function setAnswerMode(mode) {
+    if (!answerSection) {
+      return;
+    }
+
+    if (mode) {
+      answerSection.dataset.mode = mode;
+    } else {
+      answerSection.removeAttribute('data-mode');
+    }
+  }
+
+  async function handleExplainRequest(tabId, payload) {
+    if (!payload) {
+      return;
+    }
+
+    if (answerSection) {
+      answerSection.classList.add('show');
+    }
+    setAnswerMode('code');
+
+    const header = answerSection?.querySelector('.answer-header');
+    if (header) {
+      header.textContent = 'Explain Code';
+    }
+
+    answerText.innerHTML = '<div class="loading-text">Explaining code snippet...</div>';
+    citationsContainer.innerHTML = '';
+
+    try {
+      const response = await fetch('http://localhost:3001/explain-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          snippet: payload.code,
+          language: payload.language,
+          url: payload.url,
+          title: payload.title
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Explain request failed: ' + response.status);
+      }
+
+      const data = await response.json();
+      answerText.innerHTML = renderMarkdown(data.result || '');
+    } catch (error) {
+      console.error('Explain request failed', error);
+      answerText.innerHTML = '<div class="error-text">Unable to explain the code snippet right now.</div>';
+    }
+  }
 
   function persistTheme(theme) {
     const normalizedTheme = theme === 'dark' ? 'dark' : 'light';

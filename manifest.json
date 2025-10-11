@@ -7,7 +7,8 @@
     "sidePanel",
     "tabs",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "contextMenus"
   ],
   "host_permissions": [
     "<all_urls>",
@@ -21,5 +22,16 @@
   },
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "inlineBubble.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
