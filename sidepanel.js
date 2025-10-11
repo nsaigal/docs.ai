@@ -2,9 +2,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const domainDisplay = document.getElementById('domain-display');
   const queryInput = document.getElementById('query-input');
   const submitButton = document.getElementById('submit-button');
+  const fixErrorToggle = document.getElementById('fix-error-toggle');
+  const fixErrorToggleLabel = document.getElementById('fix-error-toggle-label');
+  const errorModeControls = document.getElementById('error-mode-controls');
+  const errorInput = document.getElementById('error-input');
+  const errorDropzone = document.getElementById('error-dropzone');
+  const errorFileInput = document.getElementById('error-file-input');
+  const errorAttachment = document.getElementById('error-attachment');
+  const errorAttachmentImage = document.getElementById('error-attachment-image');
+  const errorAttachmentName = document.getElementById('error-attachment-name');
+  const clearErrorAttachmentButton = document.getElementById('clear-error-attachment');
+  const fixSummaryEl = document.getElementById('fix-summary');
   const answerSection = document.getElementById('answer-section');
   const answerText = document.getElementById('answer-text');
   const citationsContainer = document.getElementById('citations-container');
+  const answerHeader = answerSection?.querySelector?.('.answer-header');
   
   const escalateBtn = document.getElementById('escalate');
   const escalationCard = document.getElementById('escalation-card');
@@ -22,6 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
   let tavusConfig = null;
   let tavusPolling = null;
   let currentTheme = 'light';
+  let isFixErrorMode = false;
+  let errorScreenshot = null;
+  const MAX_LINKS_TO_SEND = 80;
+  const DOC_CONTEXT_MAX_CHARS = 4000;
 
   const storageAvailable = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local;
   const sidePanelPort = chrome.runtime?.connect ? chrome.runtime.connect({ name: 'YCH_SIDE_PANEL' }) : null;
@@ -198,6 +214,169 @@ document.addEventListener('DOMContentLoaded', function() {
     applyTheme(nextTheme);
     persistTheme(nextTheme);
   });
+
+  function clearErrorAttachment() {
+    errorScreenshot = null;
+    if (errorAttachment) {
+      errorAttachment.hidden = true;
+      errorAttachment.classList.remove('show');
+    }
+    if (errorAttachmentImage) {
+      errorAttachmentImage.src = '';
+    }
+    if (errorAttachmentName) {
+      errorAttachmentName.textContent = '';
+    }
+  }
+
+  function updateFixErrorUI() {
+    if (!fixErrorToggle) {
+      return;
+    }
+
+    fixErrorToggle.classList.toggle('is-active', isFixErrorMode);
+    fixErrorToggle.setAttribute('aria-pressed', String(isFixErrorMode));
+
+    if (fixErrorToggleLabel) {
+      fixErrorToggleLabel.textContent = isFixErrorMode ? 'Fix Error Mode On' : 'Fix Error Mode';
+    }
+
+    if (errorModeControls) {
+      if (isFixErrorMode) {
+        errorModeControls.classList.add('show');
+        errorModeControls.hidden = false;
+      } else {
+        errorModeControls.classList.remove('show');
+        errorModeControls.hidden = true;
+        if (errorInput) {
+          errorInput.value = '';
+        }
+        clearErrorAttachment();
+      }
+    }
+
+    if (!isFixErrorMode && fixSummaryEl) {
+      fixSummaryEl.hidden = true;
+      fixSummaryEl.classList.remove('show');
+      fixSummaryEl.innerHTML = '';
+    }
+  }
+
+  fixErrorToggle?.addEventListener('click', () => {
+    isFixErrorMode = !isFixErrorMode;
+    updateFixErrorUI();
+  });
+
+  clearErrorAttachmentButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    clearErrorAttachment();
+  });
+
+  function validateScreenshot(file) {
+    if (!file) {
+      return 'No file selected.';
+    }
+
+    if (!file.type.startsWith('image/')) {
+      return 'Only image files are supported.';
+    }
+
+    const maxBytes = 6 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      return 'Screenshot must be under 6 MB.';
+    }
+
+    return null;
+  }
+
+  async function readFileAsBase64(file) {
+    const validationError = validateScreenshot(file);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+
+      errorScreenshot = {
+        name: file.name,
+        mimeType: file.type,
+        data: base64,
+      };
+
+      if (errorAttachment && errorAttachmentImage && errorAttachmentName) {
+        errorAttachment.hidden = false;
+        errorAttachment.classList.add('show');
+        errorAttachmentImage.src = `data:${file.type};base64,${base64}`;
+        errorAttachmentName.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+      }
+    } catch (error) {
+      console.error('Failed to read screenshot', error);
+      alert('Unable to load screenshot. Try a different file.');
+    }
+  }
+
+  errorFileInput?.addEventListener('change', (event) => {
+    const file = event.target?.files?.[0];
+    if (file) {
+      readFileAsBase64(file);
+      event.target.value = '';
+    }
+  });
+
+  if (errorDropzone) {
+    const stop = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((name) => {
+      errorDropzone.addEventListener(name, stop);
+    });
+
+    errorDropzone.addEventListener('dragover', () => {
+      errorDropzone.classList.add('dragover');
+    });
+
+    errorDropzone.addEventListener('dragleave', () => {
+      errorDropzone.classList.remove('dragover');
+    });
+
+    errorDropzone.addEventListener('drop', (event) => {
+      errorDropzone.classList.remove('dragover');
+      const file = event.dataTransfer?.files?.[0];
+      if (file) {
+        readFileAsBase64(file);
+      }
+    });
+
+    errorDropzone.addEventListener('click', () => {
+      errorFileInput?.click();
+    });
+  }
+
+  document.addEventListener('paste', (event) => {
+    if (!isFixErrorMode) {
+      return;
+    }
+
+    const items = event.clipboardData?.items;
+    if (!items) {
+      return;
+    }
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          readFileAsBase64(file);
+          break;
+        }
+      }
+    }
+  });
   
   // Simple markdown renderer
   function renderMarkdown(text) {
@@ -336,15 +515,20 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Handle form submission
-  submitButton.addEventListener('click', async function() {
+  submitButton.addEventListener('click', async () => {
     const query = queryInput.value.trim();
-    
-    if (!query) {
+    const errorText = errorInput?.value?.trim() || '';
+
+    if (!isFixErrorMode && !query) {
       alert('Please enter a query');
       return;
     }
-    
-    // Update current URL and domain before submitting
+
+    if (isFixErrorMode && !query && !errorText && !errorScreenshot) {
+      alert('Add the error text, a screenshot, or both before submitting.');
+      return;
+    }
+
     try {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tabs && tabs.length > 0) {
@@ -357,137 +541,56 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (err) {
       console.error('Error updating domain:', err);
     }
-    
+
     if (!currentDomain) {
       alert('Domain not available');
       return;
     }
-    
-    // Extract all links from the page
-    let pageLinks = [];
-    try {
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: currentTabId },
-        func: () => {
-          const links = [];
-          document.querySelectorAll('a[href]').forEach(link => {
-            const href = link.href;
-            const text = link.textContent.trim();
-            if (href && text) {
-              links.push({ text, url: href });
-            }
-          });
-          return links;
-        }
-      });
-      
-      if (results && results[0] && results[0].result) {
-        pageLinks = results[0].result;
-        console.log('Extracted links:', pageLinks.length);
-        console.log('Sample links:', pageLinks.slice(0, 3));
-    } else {
-        console.log('No results from script execution');
-      }
-    } catch (err) {
-      console.error('Error extracting links:', err);
-      console.error('Full error:', err);
-    }
-    
-    console.log('Sending request with', pageLinks.length, 'links');
-    
-    // Disable button and show loading state
+
     submitButton.disabled = true;
     submitButton.textContent = 'Thinking...';
     answerSection.classList.add('show');
     answerText.innerHTML = '<div class="loading-text">Searching and analyzing...</div>';
     citationsContainer.innerHTML = '';
-    
+    if (fixSummaryEl) {
+      fixSummaryEl.hidden = true;
+      fixSummaryEl.classList.remove('show');
+      fixSummaryEl.innerHTML = '';
+    }
+
+    if (isFixErrorMode) {
+      setAnswerMode('error');
+      if (answerHeader) {
+        answerHeader.textContent = 'Fix Error';
+      }
+    } else {
+      setAnswerMode(null);
+      if (answerHeader) {
+        answerHeader.textContent = 'Answer';
+      }
+    }
+
+    const pageContext = await gatherPageContext();
+    const requestPayload = buildRequestPayload({ query, errorText, pageContext });
+
     try {
-      const response = await fetch('http://localhost:3001/analyze', {
+      const response = await fetch(requestPayload.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          domain: currentDomain,
-          query: query,
-          url: currentURL,
-          links: pageLinks
-        })
+        body: JSON.stringify(requestPayload.body)
       });
-      
+
       if (!response.ok) {
         throw new Error('Request failed: ' + response.status);
       }
-      
+
       const data = await response.json();
-      
-      console.log('Response data:', data);
-      console.log('Citations:', data.citations);
-      
-      // Display answer with markdown rendering
-      answerText.innerHTML = renderMarkdown(data.result);
-      
-      // Helper function to navigate to a citation URL
-      function navigateToCitation(citation) {
-        if (!currentTabId || !citation.url) return;
-        
-        // Use the URL directly - redirect URLs will automatically redirect to the actual page
-        const targetUrl = citation.url;
-        
-        console.log('Navigating to:', targetUrl);
-        console.log('Citation title:', citation.title);
-        
-        chrome.tabs.update(currentTabId, { url: targetUrl }, function() {
-          console.log('Navigation complete');
-        });
-      }
-      
-      // Extract URLs from response text if no formal citations
-      let citationsToDisplay = data.citations || [];
-      
-      if (citationsToDisplay.length === 0) {
-        // Extract URLs from the response text
-        const urlRegex = /(https?:\/\/[^\s<>"]+)/g;
-        const foundUrls = data.result.match(urlRegex);
-        
-        if (foundUrls) {
-          console.log('Found URLs in response:', foundUrls);
-          citationsToDisplay = foundUrls.map((url, idx) => ({
-            index: idx,
-            title: url,
-            url: url
-          }));
-        }
-      }
-      
-      // Display citations as hyperlinks at the bottom if available
-      if (citationsToDisplay.length > 0) {
-        citationsContainer.innerHTML = '';
-        
-        // Automatically navigate to the first citation
-        navigateToCitation(citationsToDisplay[0]);
-        
-        citationsToDisplay.forEach((citation, index) => {
-          const link = document.createElement('a');
-          link.className = 'citation-link';
-          link.href = '#';
-          link.textContent = (index + 1).toString();
-          link.title = citation.title || citation.url;
-          
-          // Navigate the current tab to this URL when clicked
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            navigateToCitation(citation);
-          });
-          
-          citationsContainer.appendChild(link);
-        });
-      }
-      
-    } catch (err) {
-      console.error('Error:', err);
-      answerText.innerHTML = '<div class="error-text">Error: ' + err.message + '</div>';
+      handleAssistantResponse(data, pageContext);
+    } catch (error) {
+      console.error('Assistant error:', error);
+      answerText.innerHTML = '<div class="error-text">Error: ' + error.message + '</div>';
       citationsContainer.innerHTML = '';
     } finally {
       submitButton.disabled = false;

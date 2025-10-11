@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-import uvicorn
+import base64
+import json
 import logging
 import os
+import uvicorn
 
 from google import genai
 from google.genai import types
@@ -39,6 +41,7 @@ client = genai.Client(api_key=gemini_api_key)
 INLINE_ASSISTANT_MODEL = os.getenv("INLINE_ASSISTANT_MODEL", "gemini-2.5-pro")
 MAX_SELECTION_CHARS = 1000
 MAX_LINKS = 40
+ERROR_CONTEXT_MAX_CHARS = 4000
 
 
 class ExplainCodeRequest(BaseModel):
@@ -57,6 +60,22 @@ class AnalyzeRequest(BaseModel):
     url: str
     links: list[PageLink] = []
     selectionText: str | None = None
+
+
+class ErrorScreenshot(BaseModel):
+    mimeType: str
+    data: str
+    name: str | None = None
+
+
+class ErrorDocsRequest(BaseModel):
+    domain: str
+    url: str
+    links: list[PageLink] = []
+    query: str | None = None
+    errorText: str | None = None
+    screenshot: ErrorScreenshot | None = None
+    docContext: str | None = None
 
 @app.post("/analyze")
 async def analyze_history(request: AnalyzeRequest):
