@@ -1,3 +1,8 @@
+<img src="logo.png" alt="Docs.ai Logo" width="125">
+
+# Docs.ai
+A YC hackathon project [Neil](https://www.linkedin.com/in/neil-saigal-91b2219b/) & [Nikash](http://linkedin.com/in/nikash-bhardwaj/)
+
 Demo video: https://drive.google.com/file/d/1VQotlAA2TNYMgE3-kmbJAmSf3pj5PNs-/view?usp=sharing
 
 ## What problem does this solve?
