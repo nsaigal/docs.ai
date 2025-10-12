@@ -3,11 +3,21 @@
   "name": "YC Hack",
   "version": "1.0",
   "description": "Display your 20 most recent sites visited",
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
   "permissions": [
     "sidePanel",
     "tabs",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "contextMenus"
+  ],
+  "optional_host_permissions": [
+    "http://localhost:8080/*"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -15,10 +25,31 @@
   "side_panel": {
     "default_path": "sidepanel.html"
   },
+  "options_page": "options.html",
   "action": {
-    "default_title": "Open YC Hack"
+    "default_title": "Open YC Hack",
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "inlineBubble.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' http://localhost:* https://* wss://*; frame-src http://localhost:* https://*"
   }
 }

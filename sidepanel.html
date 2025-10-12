@@ -21,6 +21,16 @@
         linear-gradient(90deg, rgba(0, 255, 159, 0.03) 1px, transparent 1px);
       background-size: 20px 20px;
       animation: scanline 8s linear infinite;
+      transition: background 0.3s, color 0.3s;
+    }
+    
+    body.light-mode {
+      background: #f5f5f5;
+      color: #333;
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      animation: none;
     }
     
     @keyframes scanline {
@@ -51,7 +61,6 @@
       text-transform: uppercase;
       margin-bottom: 20px;
       box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
-      animation: pulse 3s ease-in-out infinite;
     }
     
     .query-section {
@@ -387,6 +396,410 @@
       opacity: 0.7;
       text-shadow: 0 0 5px rgba(0, 255, 159, 0.5);
     }
+    
+    .badge-container {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .domain-badge {
+      flex: 0 0 auto;
+    }
+    
+    .badge-container-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .escalate-button {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.8));
+      color: #fff;
+      border: 2px solid #ff0000;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+      white-space: nowrap;
+    }
+    
+    .escalate-button:hover {
+      background: linear-gradient(135deg, rgba(255, 0, 0, 1), rgba(220, 0, 0, 1));
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .escalate-button.active {
+      background: linear-gradient(135deg, rgba(0, 200, 0, 0.8), rgba(0, 150, 0, 0.8));
+      border-color: #00ff00;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    }
+    
+    .escalate-button.active:hover {
+      background: linear-gradient(135deg, rgba(0, 220, 0, 1), rgba(0, 170, 0, 1));
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+    }
+    
+    /* Avatar Loading Overlay */
+    .avatar-loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 14, 39, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      z-index: 10;
+      transition: opacity 0.6s ease-out, backdrop-filter 0.6s ease-out;
+    }
+    
+    .avatar-loading-overlay.fade-out {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+      pointer-events: none;
+    }
+
+    .answer-section[data-mode="code"] .answer-header {
+      color: #1d4ed8;
+    }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(0, 255, 159, 0.2);
+      border-top-color: #00ff9f;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text-overlay {
+      color: #00ff9f;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: glow 2s ease-in-out infinite;
+      text-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+    }
+    
+    .avatar-container {
+      position: relative;
+      background: #000;
+    }
+    
+    .avatar-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      z-index: 1;
+    }
+    
+    #avatar-iframe {
+      position: relative;
+      z-index: 5;
+    }
+    
+    /* Theme Toggle Switch */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    
+    .theme-toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #00ff9f;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px rgba(0, 255, 159, 0.3), inset 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .theme-toggle-switch::after {
+      content: '🌙';
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(135deg, #00ff9f, #00ffff);
+      border-radius: 50%;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .theme-toggle-switch:hover {
+      box-shadow: 0 0 20px rgba(0, 255, 159, 0.5), inset 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    body.light-mode .theme-toggle-switch {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: #3b82f6;
+      box-shadow: 0 0 10px rgba(29, 78, 216, 0.2), inset 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    body.light-mode .theme-toggle-switch::after {
+      content: '☀️';
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      left: 28px;
+    }
+    
+    body.light-mode .theme-toggle-switch:hover {
+      box-shadow: 0 0 20px rgba(29, 78, 216, 0.3), inset 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .theme-toggle-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #00ff9f;
+      text-shadow: 0 0 5px rgba(0, 255, 159, 0.5);
+    }
+    
+    body.light-mode .theme-toggle-label {
+      color: #1d4ed8;
+      text-shadow: none;
+    }
+    
+    /* Light mode styles */
+    body.light-mode .escalate-button {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.8), rgba(185, 28, 28, 0.8));
+      border-color: #dc2626;
+      box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+    }
+    
+    body.light-mode .escalate-button:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+      box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+    }
+    
+    body.light-mode .escalate-button.active {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.8), rgba(22, 163, 74, 0.8));
+      border-color: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+    }
+    
+    body.light-mode .escalate-button.active:hover {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.9), rgba(34, 197, 94, 0.9));
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+    }
+    
+    body.light-mode .domain-badge {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+      color: #1d4ed8;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+    }
+    
+    body.light-mode .query-input {
+      background: rgba(59, 130, 246, 0.05);
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+    
+    body.light-mode .query-input::placeholder {
+      color: rgba(29, 78, 216, 0.4);
+    }
+    
+    body.light-mode .query-input:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 15px rgba(29, 78, 216, 0.3);
+      background: rgba(59, 130, 246, 0.08);
+    }
+    
+    body.light-mode .submit-button {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.2));
+      color: #1d4ed8;
+      border-color: #3b82f6;
+    }
+    
+    body.light-mode .submit-button:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(29, 78, 216, 0.3));
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    body.light-mode .submit-button:disabled {
+      background: rgba(150, 150, 150, 0.2);
+      border-color: #999;
+      color: #666;
+    }
+    
+    body.light-mode .answer-content {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #333;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+    }
+    
+    body.light-mode .answer-header {
+      color: #1d4ed8;
+      text-shadow: 0 0 10px rgba(29, 78, 216, 0.3);
+    }
+    
+    body.light-mode #answer-text h1,
+    body.light-mode #answer-text h2,
+    body.light-mode #answer-text h3,
+    body.light-mode #answer-text h4 {
+      color: #1d4ed8;
+      text-shadow: none;
+    }
+    
+    body.light-mode #answer-text h2 {
+      color: #7c3aed;
+    }
+    
+    body.light-mode #answer-text h3 {
+      color: #059669;
+    }
+    
+    body.light-mode #answer-text h4 {
+      color: #d97706;
+    }
+    
+    body.light-mode #answer-text p,
+    body.light-mode #answer-text li {
+      color: #333;
+    }
+    
+    body.light-mode #answer-text li::marker {
+      color: #3b82f6;
+    }
+    
+    body.light-mode #answer-text strong {
+      color: #1d4ed8;
+      text-shadow: none;
+    }
+    
+    body.light-mode #answer-text em {
+      color: #7c3aed;
+    }
+    
+    body.light-mode #answer-text code {
+      background: rgba(147, 51, 234, 0.1);
+      color: #7c3aed;
+      border-color: rgba(147, 51, 234, 0.3);
+    }
+    
+    body.light-mode #answer-text pre {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.05);
+    }
+    
+    body.light-mode #answer-text pre code {
+      color: #059669;
+    }
+    
+    body.light-mode #answer-text blockquote {
+      border-left-color: #7c3aed;
+      color: #666;
+    }
+    
+    body.light-mode #answer-text a {
+      color: #1d4ed8;
+      text-shadow: none;
+      border-bottom-color: rgba(29, 78, 216, 0.5);
+    }
+    
+    body.light-mode #answer-text a:hover {
+      text-shadow: none;
+      border-bottom-color: #1d4ed8;
+    }
+    
+    body.light-mode .citation-link {
+      color: #1d4ed8;
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.05);
+    }
+    
+    body.light-mode .citation-link:hover {
+      background: rgba(59, 130, 246, 0.15);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+    
+    body.light-mode .citation-link::before,
+    body.light-mode .citation-link::after {
+      color: #7c3aed;
+    }
+    
+    body.light-mode .loading-text {
+      color: #d97706;
+      text-shadow: none;
+    }
+    
+    body.light-mode .error-text {
+      color: #dc2626;
+      background: rgba(220, 38, 38, 0.1);
+      border-color: #dc2626;
+      box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
+    }
+    
+    body.light-mode .logo-text {
+      color: #ff6b4a;
+      text-shadow: 
+        1px 0 0 #ff6b4a,
+        -1px 0 0 #ff6b4a,
+        0 1px 0 #ff6b4a,
+        0 -1px 0 #ff6b4a,
+        1px 1px 0 rgba(0, 0, 0, 0.2),
+        2px 2px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    body.light-mode .logo-subtitle {
+      color: #059669;
+      text-shadow: none;
+    }
+    
+    body.light-mode .logo-container {
+      border-bottom-color: rgba(59, 130, 246, 0.2);
+    }
+    
+    body.light-mode .avatar-loading-overlay {
+      background: rgba(245, 245, 245, 0.95);
+    }
+    
+    body.light-mode .loading-spinner {
+      border-color: rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+    }
+    
+    body.light-mode .loading-text-overlay {
+      color: #1d4ed8;
+      text-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -395,7 +808,15 @@
     <div class="logo-subtitle">Documentation Assistant</div>
   </div>
   
-  <div class="domain-badge" id="domain-display">Loading...</div>
+  <div class="badge-container">
+    <div class="domain-badge" id="domain-display">Loading...</div>
+    <div class="badge-container-right">
+      <button id="escalate-button" class="escalate-button">Escalate</button>
+      <div class="theme-toggle-container">
+        <div class="theme-toggle-switch" id="theme-toggle"></div>
+      </div>
+    </div>
+  </div>
   
   <div class="query-section">
     <input 
@@ -412,6 +833,32 @@
     <div id="answer-content" class="answer-content">
       <div id="answer-text"></div>
       <div id="citations-container" class="citations-container"></div>
+    </div>
+  </div>
+
+  <div id="avatar-section" class="answer-section">
+    <div class="answer-header">AI Assistant</div>
+    <div class="answer-content">
+      <div style="font-size:11px; color:#aaa; margin-bottom:8px;">
+        Talk with the AI avatar or send text. Click "Share Page" to give the avatar context about the current page.
+      </div>
+      <div class="avatar-container">
+        <img src="pipecat-tavus-hackathon/images/patrick.png" alt="Avatar" class="avatar-placeholder" />
+        <iframe
+          id="avatar-iframe"
+          src="http://localhost:8080/client/avatar-embed.html"
+          allow="camera; microphone; display-capture"
+          style="width:100%; height:360px; border:1px solid rgba(0,255,159,0.3); border-radius:4px; background:transparent;"
+        ></iframe>
+        <div id="avatar-loading-overlay" class="avatar-loading-overlay">
+          <div class="loading-spinner"></div>
+          <div class="loading-text-overlay">Connecting you to agent...</div>
+        </div>
+      </div>
+      <!-- <div style="display:flex; gap:8px; margin-top:12px;">
+        <button id="avatar-mute-btn" class="submit-button" style="flex:1;">Mute Mic</button>
+        <button id="share-page-btn" class="submit-button" style="flex:1; background: rgba(255, 0, 255, 0.2); border-color: #ff00ff;">Share Page</button>
+      </div> -->
     </div>
   </div>
   

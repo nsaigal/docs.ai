@@ -1,0 +1,21 @@
+{
+  "name": "yc-hack",
+  "version": "1.0.0",
+  "description": "A Chrome extension that helps you navigate documentation efficiently using AI.",
+  "main": "background.js",
+  "dependencies": {
+    "@eslint/js": "^9.37.0",
+    "dotenv": "^17.2.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:avatar": "echo 'No local avatar build needed; using iframe client.'",
+    "lint": "eslint sidepanel.js inlineBubble.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.10.0"
+  }
+}
