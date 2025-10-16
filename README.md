@@ -13,7 +13,7 @@ Demo video: https://drive.google.com/file/d/1VQotlAA2TNYMgE3-kmbJAmSf3pj5PNs-/vi
 - Inline questions, contextual code explain, and screenshot-backed error fixes now keep the flow going even when a developer is heads-down in the editor.
 
 ## How we used Gemini models and Pipecat
-- Gemini 2.5 Flash (through `google.genai`, shout-out to the sponsor) drives `/analyze`. We wire in a `url_context` call plus up to 50 page links, so answers come back citation-rich and aligned with whatever docs you’re browsing.
+- Gemini 2.5 Flash (through `google.genai) drives `/analyze`. We wire in a `url_context` call plus up to 50 page links, so answers come back citation-rich and aligned with whatever docs you’re browsing.
 - Gemini 2.5 Flash Lite lives inside Pipecat (`GoogleLLMService`). It calls our `analyze_documentation(question)` tool whenever it needs deeper context, keeping conversations grounded while still feeling snappy.
 - Pipecat—also a sponsor—runs the full media relay: SmartTurn + Silero VAD tame audio, Deepgram captures transcripts, Gemini replies, Cartesia converts to speech, Tavus streams the face, and RTVI keeps the WebRTC handshake buttery smooth.
 - Tavus (sponsor love!) provides the live replica that makes every Gemini answer feel personal. Pipecat hands over Cartesia’s audio so Tavus matches lip sync in real time.
